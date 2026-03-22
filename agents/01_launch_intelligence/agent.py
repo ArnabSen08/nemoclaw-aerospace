@@ -69,7 +69,7 @@ def print_raw_data(data: dict):
     table.add_column("Rocket")
     table.add_column("Webcast")
     for l in data.get("upcoming_launches", []):
-        table.add_row(l["name"], l["date"], l["rocket"], l.get("webcast", "N/A")[:40])
+        table.add_row(l["name"], l["date"], l["rocket"], (l.get("webcast") or "N/A")[:40])
     console.print(table)
 
     # ISS
