@@ -1,0 +1,45 @@
+# Base network egress policy for all aerospace agents
+# Apply with: openshell policy set policies/aerospace-base.yaml
+
+version: "1"
+name: aerospace-base
+
+network:
+  egress:
+    allow:
+      # SpaceX API
+      - host: api.spacexdata.com
+        ports: [443]
+      # Open-Notify (ISS)
+      - host: api.open-notify.org
+        ports: [80, 443]
+      # NASA APIs
+      - host: api.nasa.gov
+        ports: [443]
+      - host: eonet.gsfc.nasa.gov
+        ports: [443]
+      - host: gibs.earthdata.nasa.gov
+        ports: [443]
+      - host: data.nasa.gov
+        ports: [443]
+      # CelesTrak (TLE orbital data)
+      - host: celestrak.org
+        ports: [443]
+      - host: www.celestrak.org
+        ports: [443]
+      # GitHub (telemetry datasets)
+      - host: raw.githubusercontent.com
+        ports: [443]
+      - host: github.com
+        ports: [443]
+    deny:
+      - host: "*"
+
+filesystem:
+  allow:
+    - path: /sandbox
+      permissions: [read, write]
+    - path: /tmp
+      permissions: [read, write]
+  deny:
+    - path: "/"
