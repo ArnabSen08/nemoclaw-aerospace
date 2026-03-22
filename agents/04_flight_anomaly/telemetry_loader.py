@@ -12,6 +12,7 @@ import os
 import json
 
 TELEMANOM_BASE = "https://raw.githubusercontent.com/khundman/telemanom/master"
+TELEMANOM_DATA_BASE = "https://github.com/khundman/telemanom/raw/master"
 
 # Known channels with labeled anomalies from MSL and SMAP missions
 ANOMALY_CHANNELS = {
@@ -47,17 +48,31 @@ def fetch_labeled_anomalies():
 def fetch_channel_data(channel_id: str, split="test"):
     """
     Download telemetry numpy array for a specific channel.
+    Falls back to synthetic data if download fails.
     split: 'train' or 'test'
     """
-    url = f"{TELEMANOM_BASE}/data/{split}/{channel_id}.npy"
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
+    import tempfile
+    for base in [TELEMANOM_BASE, TELEMANOM_DATA_BASE]:
+        try:
+            url = f"{base}/data/{split}/{channel_id}.npy"
+            resp = requests.get(url, timeout=20)
+            resp.raise_for_status()
+            tmp_path = os.path.join(tempfile.gettempdir(), f"{channel_id}_{split}.npy")
+            with open(tmp_path, "wb") as f:
+                f.write(resp.content)
+            return np.load(tmp_path)
+        except Exception:
+            continue
 
-    # Save to /tmp and load
-    tmp_path = f"/tmp/{channel_id}_{split}.npy"
-    with open(tmp_path, "wb") as f:
-        f.write(resp.content)
-    return np.load(tmp_path)
+    # Synthetic fallback: realistic spacecraft telemetry with injected anomalies
+    print(f"  [warning] Could not download {channel_id} telemetry — using synthetic data")
+    rng = np.random.default_rng(seed=42)
+    n = 2000
+    base_signal = np.sin(np.linspace(0, 20 * np.pi, n)) * 0.3 + rng.normal(0, 0.05, n)
+    # Inject anomalies at known positions
+    for pos in [400, 800, 1200, 1600]:
+        base_signal[pos:pos+10] += rng.choice([-1, 1]) * rng.uniform(1.5, 3.0)
+    return base_signal.reshape(-1, 1)
 
 def compute_basic_stats(data: np.ndarray):
     """Compute basic telemetry statistics for the first channel dimension."""
