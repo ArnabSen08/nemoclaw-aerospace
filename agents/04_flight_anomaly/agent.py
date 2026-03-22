@@ -79,7 +79,7 @@ def main():
         f"[bold cyan]Flight Anomaly Detection Agent[/bold cyan]\n"
         f"Channel: [yellow]{args.channel}[/yellow] | "
         f"Mission: [yellow]{mission}[/yellow] | "
-        f"Z-threshold: [yellow]{args.z_threshold}σ[/yellow]",
+        f"Z-threshold: [yellow]{args.z_threshold}\u03c3[/yellow]",
         expand=False
     ))
 
